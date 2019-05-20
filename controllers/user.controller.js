@@ -108,11 +108,12 @@ module.exports.login = (req, res) => {
                     const obj = gentoken.GenerateToken(payload)
                     data.token=obj;
                    // var token = jwt.sign({ payload }, secret, { expiresIn:'1d' });
-                    client.set('cache',data.token);
-                    client.get('cache', function(error, result) {
-                        if (error) throw error;
-                        console.log('Redis GET result from login ->', result)
-                        });
+                    client.set('loginToken'+data[0]._id,data.token);
+                    console.log("this is redis token now", data.token);
+                    // client.get('cache', function(error, result) {
+                    //     if (error) throw error;
+                    //     console.log('Redis GET result from login ->', result)
+                    //     });
                     
                     return res.status(200).send(
                         {

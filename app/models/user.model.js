@@ -47,10 +47,10 @@ function hash(password) {
 *@param       : body (request from client)
 *@param       : callback (response from server)
 ****************************************************************************/
-usermodel.prototype.register = (body, callback) => {
+usermodel.prototype.register =  async (body, callback) => {
 
     //To find the registered user in database
-    user.find({ 'email': body.email }, (err, data) => {
+   await user.find({ 'email': body.email },async (err, data) => {
         if (err) {
             console.log("Error in register user schema ");
             return callback(err);
@@ -66,7 +66,7 @@ usermodel.prototype.register = (body, callback) => {
                 "password": hash(body.password),
                
             });
-            newUser.save((err, result) => {
+           await newUser.save((err, result) => {
                 if (err) {
                     console.log("error in model file", err);
                     return callback(err);
@@ -85,11 +85,11 @@ usermodel.prototype.register = (body, callback) => {
 *@param       : body (request from client)
 *@param       : callback (response from server)
 ****************************************************************************/
-usermodel.prototype.login = (body, callback) => {
+usermodel.prototype.login = async (body, callback) => {
 
     //The find() method with parameters returns the requested documents from a collection and 
     //returns requested fields for the documents. Email of user is requested.
-    user.find({ "email": body.email }, (err, data) => {
+   await user.find({ "email": body.email }, (err, data) => {
         if (err) {
             return callback(err);
         } else if (data.length > 0) {
@@ -115,10 +115,10 @@ usermodel.prototype.login = (body, callback) => {
 *@param       : body (request from client)
 *@param       : callback (response from server)
 ****************************************************************************/
-usermodel.prototype.forgotPassword = (body, callback) => {
+usermodel.prototype.forgotPassword = async (body, callback) => {
     // console.log("body in model==>",body);
 
-    user.find({ "email": body.email }, (err, data) => {
+  await  user.find({ "email": body.email }, (err, data) => {
         if (err) {
             return callback(err);
         } else if (data) {

@@ -4,8 +4,8 @@ var aws = require('aws-sdk')
 var multer = require('multer')
 var multerS3 = require('multer-s3')
 
-console.log("ghghgghgh", process.env.AccessKeyID);
-console.log("asasasasa", process.env.SecretAccessKey);
+console.log("AccessKeyID", process.env.AccessKeyID);
+console.log("SecretAccessKey", process.env.SecretAccessKey);
 var s3 = new aws.S3({
     
    // bucketName: 'fundoo-image',

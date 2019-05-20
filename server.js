@@ -109,7 +109,7 @@ var FCM = require('fcm-node');
         // collapse_key: 'your_collapse_key',
         
         notification: {
-            title: 'Reminder push jhghjghj notification', 
+            title: 'Reminder push notification', 
             body: 'Reminder push notification' 
         },
         

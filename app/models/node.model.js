@@ -7,6 +7,8 @@
  ******************************************************************************/
 const mongoose = require("mongoose");
 mongoose.set("useCreateIndex", true);
+var redis = require('redis');
+var client = redis.createClient();
 const Schema = mongoose.Schema;
 /*******************************************************************************
  * @description : Creating note schema using mongoose
@@ -15,7 +17,7 @@ var noteSchema = new mongoose.Schema(
   {
     userId: {
       type: Schema.Types.ObjectId,
-      ref : 'userSchema'
+      ref: 'userSchema'
     },
     title: {
       type: String,
@@ -44,12 +46,12 @@ var noteSchema = new mongoose.Schema(
       type: Boolean
     },
     notemessage: {
-      type : String
+      type: String
     },
     sequence: {
-      type : Number
+      type: Number
     },
-    
+
     label: [
       {
         type: String,
@@ -69,23 +71,59 @@ function noteModel() { }
  * @param {*request from frontend} objectNote
  * @param {*response to backend} callback
  ******************************************************************************************************/
+// noteModel.prototype.addNotes = (objectNote, callback) => {
+//   console.log("this is headers",objectNote.headers)
+// console.log("data-->", objectNote.decoded.payload.user_id);
+//   const noteModel = new note({
+//     "userId": objectNote.decoded.payload.user_id,
+//     "title": objectNote.body.title,
+//     "description": objectNote.body.description,
+//     "color": objectNote.body.color,
+//     "image": objectNote.body.image
+//   });
+//   noteModel.save((err, result) => {
+//     if (err) {
+//       callback(err);
+//     } else {
+//       callback(null, result);
+//     }
+//   });
+// };
+//redis using
+
 noteModel.prototype.addNotes = (objectNote, callback) => {
-console.log("data-->", objectNote.decoded.payload.user_id);
-  const noteModel = new note({
-    "userId": objectNote.decoded.payload.user_id,
-    "title": objectNote.body.title,
-    "description": objectNote.body.description,
-    "color": objectNote.body.color,
-    "image": objectNote.body.image
-  });
-  noteModel.save((err, result) => {
-    if (err) {
-      callback(err);
-    } else {
-      callback(null, result);
-    }
-  });
-};
+  console.log("data-->", objectNote.decoded.payload.user_id);
+  var redisToken = "";
+  client.get("loginToken" + objectNote.decoded.payload.user_id, (err, data) => {
+    if (err) { console.log("error in redis part") }
+    redisToken = data;
+
+  })
+  var localstrorageToken = objectNote.headers.token
+  console.log("this is localstrge token", localstrorageToken)
+  if (redisToken.localeCompare(localstrorageToken)) {
+
+    const noteModel = new note({
+      "userId": objectNote.decoded.payload.user_id,
+      "title": objectNote.body.title,
+      "description": objectNote.body.description,
+      "color": objectNote.body.color,
+      "image": objectNote.body.image
+    });
+    noteModel.save((err, result) => {
+      if (err) {
+        callback(err);
+      } else {
+        callback(null, result);
+      }
+    });
+  }
+  else {
+   console.log("error redis token doest match")
+   callback(err);
+  }
+}
+
 /*******************************************************************************
  * @description:it will get the notes using userId and find the notes with data
  * @param : {*request from frontend} id
@@ -109,7 +147,7 @@ console.log("data-->", objectNote.decoded.payload.user_id);
 //   );
 // };
 noteModel.prototype.getNotes = (id, callback) => {
- 
+
   console.log("in model", id);
   note.find({ userId: id }, (err, result) => {
     if (err) {
@@ -118,7 +156,7 @@ noteModel.prototype.getNotes = (id, callback) => {
       console.log("", result);
       return callback(null, result);
     }
-  }).sort({sequence:0});
+  }).sort({ sequence: 0 });
 };
 module.exports = new noteModel();
 
@@ -142,7 +180,7 @@ noteModel.prototype.updateColor = (noteID, updateParams, callback) => {
       if (err) {
         callback(err);
       } else {
-        console.log("Result",result)
+        console.log("Result", result)
         return callback(null, updateParams);
       }
     }
@@ -166,7 +204,7 @@ noteModel.prototype.deleteNote = (data, callback) => {
           status: 200,
           msg: "note is deleted successfully"
         };
-        console.log("Result",result)
+        console.log("Result", result)
         return callback(null, obj);
       }
     }
@@ -181,13 +219,13 @@ noteModel.prototype.deleteNote = (data, callback) => {
 
 noteModel.prototype.erashTrash = (req, callback) => {
   console.log("in model", req.body);
-  note.deleteMany({ trash : true },(err, result) => {
-      if (err) {
-          callback(err)
-      } else {
-          console.log("Trash", result)
-          return callback(null, result)
-      }
+  note.deleteMany({ trash: true }, (err, result) => {
+    if (err) {
+      callback(err)
+    } else {
+      console.log("Trash", result)
+      return callback(null, result)
+    }
   })
 };
 /***************************************************************************
@@ -212,7 +250,7 @@ noteModel.prototype.isArchived = (noteID, archiveNote, callback) => {
       if (err) {
         callback(err);
       } else {
-        console.log("Result",result)
+        console.log("Result", result)
         return callback(null, archiveNote);
       }
     }
@@ -279,7 +317,7 @@ noteModel.prototype.isTrashed = (noteID, trashNote, callback) => {
       if (err) {
         callback(err);
       } else {
-        console.log("Result",result)
+        console.log("Result", result)
         return callback(null, trashNote);
       }
     }
@@ -472,7 +510,7 @@ noteModel.prototype.addLabel = (labelData, callback) => {
 //   });
 // };
 noteModel.prototype.getLabels = (id, callback) => {
- 
+
   console.log("in model", id);
   label.find({ userId: id }, (err, result) => {
     if (err) {
@@ -620,48 +658,48 @@ noteModel.prototype.deleteLabelToNote = (labelParams, callback) => {
 
 noteModel.prototype.getAllUser = (callBack) => {
   note.find((err, result) => {
-      if (err) {
-          callBack(err);
+    if (err) {
+      callBack(err);
+    }
+    else {
+      const reminder = []
+      var d = new Date();
+      const date = new Date(d.getFullYear(), d.getMonth(), d.getDate(), d.getHours(), d.getMinutes()).toJSON();
+
+      result.forEach(function (value) {
+        if (value.reminder == date) {
+          console.log('correct');
+          reminder.push(value);
+        }
+      })
+      console.log("Reminder length", reminder.length);
+      if (reminder.length > 0) {
+        callBack(null, reminder)
       }
       else {
-          const reminder = []
-          var d = new Date();
-          const date = new Date(d.getFullYear(), d.getMonth(), d.getDate(), d.getHours(), d.getMinutes()).toJSON();
-
-          result.forEach(function (value) {
-              if (value.reminder == date) {
-                  console.log('correct');
-                  reminder.push(value);
-              }
-          })
-          console.log("Reminder length", reminder.length);
-          if (reminder.length > 0) {
-              callBack(null, reminder)
-          }
-          else {
-              callBack(null, "No reminders found")
-          }
+        callBack(null, "No reminders found")
       }
+    }
   });
 }
 
 noteModel.prototype.noteimage = (req, callback) => {
-    
+
   // updateOne() Updates a single document within the collection based on the filter.
-  console.log("request in model... ==>",req.params.noteID);
-  
-  note.findOneAndUpdate({ _id: req.params.noteID },{
-      $set :{
-          notemessage : req.file.location
-      },
-  } , (err, data) => {
-      if (err) {
-          console.log("Error in");
-          return callback(err);
-      } else {
-          console.log("adadad",data)
-          return callback(null, data);
-      }
+  console.log("request in model... ==>", req.params.noteID);
+
+  note.findOneAndUpdate({ _id: req.params.noteID }, {
+    $set: {
+      notemessage: req.file.location
+    },
+  }, (err, data) => {
+    if (err) {
+      console.log("Error in");
+      return callback(err);
+    } else {
+      console.log("adadad", data)
+      return callback(null, data);
+    }
   });
 
 }
@@ -669,29 +707,29 @@ noteModel.prototype.sequence = (userId, req, callback) => {
 
   note.find(
     {
-    userId: userId
+      userId: userId
     },
     (err, result) => {
-    if (err) {
-    callback(err);
-    } else {
-    for(let i=0;i<req.body.length;i++){
-    note.updateOne(
-    {_id:req.body[i]._id},
-    {
-    sequence : i
-    },(err, data) => {
-    if (err) {
-    console.log("Error in");
-    return callback(err);
-    } else {
-    console.log("adadad",data)
+      if (err) {
+        callback(err);
+      } else {
+        for (let i = 0; i < req.body.length; i++) {
+          note.updateOne(
+            { _id: req.body[i]._id },
+            {
+              sequence: i
+            }, (err, data) => {
+              if (err) {
+                console.log("Error in");
+                return callback(err);
+              } else {
+                console.log("adadad", data)
+              }
+            });
+        }
+        return callback(null, result);
+      }
     }
-    });
-    }
-    return callback(null, result);
-    }
-    }
-    );
+  );
 };
 module.exports = new noteModel();
