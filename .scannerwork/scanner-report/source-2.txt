@@ -21,58 +21,6 @@ var client = redis.createClient();
 *@param       : req (request from client)
 *@param       : res (response from server)
 ****************************************************************************/
-//using Promises
-// module.exports.register = (req, res) => {
-//     try {
-//         req.checkBody('firstname', 'Firstname is not valid').isLength({ min: 3 }).isAlpha()
-//         req.checkBody('lastname', 'Lastname is not valid').isLength({ min: 3 }).isAlpha()
-//         req.checkBody('email', 'Email is not valid').isEmail()
-//         req.checkBody('password', 'password is not valid').isLength({ min: 4 }).equals(req.body.password)
-//         var errors = req.validationErrors()
-//         var response = {}
-//         if (errors) {
-//             response.success = false
-
-//             response.error = errors
-//             return res.status(422).send(response)
-//         } else {
-//             var email = new Promise(function(resolve, reject) {
-//                 User.findOne({ "email": req.body.email }, function(err, user) {
-//                     if (err)
-//                         reject(err);
-
-//                     if (user) {
-//                         resolve(1);
-//                     } else {
-//                         resolve(0);
-//                     }
-//                 });
-//             });
-//             email.then(function(data) {
-//                 if (data == 1)
-//                     console.log("email already been taken.");
-//                 else {
-//                     var newUser = new User();
-//                     newUser.firstname = req.body.firstname;
-//                     newUser.laststname = req.body.laststname;
-//                     newUser.password = req.body.password;
-//                     newUser.email = req.body.email;
-//                     newUser.save(function(err, user) {
-//                         if (!err)
-//                             console.log(user)
-//                         return res.send(user)
-//                     });
-//                 }
-
-               
-//             })
-
-//         }
-
-//     } catch (err) {
-//         console.log(err)
-//     }
-// }
 module.exports.register = (req, res) => {
     console.log("inside register",req.body);
     req.checkBody('firstname', 'Firstname is not valid').isLength({ min: 3 }).isAlpha();
