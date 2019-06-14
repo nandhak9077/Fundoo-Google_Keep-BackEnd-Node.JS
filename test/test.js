@@ -1,13 +1,4 @@
-/************************************************************************************
- * @purpose   : Controller will contain method for all CRUD operations.
- *
- * @file      : user.controller.js
- * @overview  : Methods for all CRUD operation of user.
- * @author    : bekiranabbi@gmail.com
- * @version   : 1.0
- * @since     : 04.03.2019
- *
- *************************************************************************************/
+
 var chai = require("chai");
 var chaiHttp = require("chai-http");
 chai.use(chaiHttp);
